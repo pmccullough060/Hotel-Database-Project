@@ -8,6 +8,8 @@ START TRANSACTION;
    SET @doublebed = 2;
    SET @wifi = 1;
    SET @parking = 2;
+   SET @image_guid_1 = 'eda1c6f23b154b2b9e82764c8ad0ce49';
+   SET @image_guid_2 = '15044db7c324459ca4e6ce0c9132842f';
 
    /* adding a room record to the room table */
 
@@ -38,4 +40,9 @@ START TRANSACTION;
    VALUES (true, 40.00, '24:00:00', @last_id_in_room )
           (false, @last_id_in_room );
 
+   /* add guids for two images of the room so they can be retrieved from the CDN*/
+   INSERT INTO roomimage (image_guid)
+   VALUES (@image_guid_1)
+          (@image_guid_2);
+   
 COMMIT;
