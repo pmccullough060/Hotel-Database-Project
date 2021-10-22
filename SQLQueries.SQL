@@ -61,18 +61,6 @@ START TRANSACTION;
 
 COMMIT;
 
-
-/* Gets the room_id of available rooms for a given set of dates for a given hotel_id */
-
-SELECT room.room_id FROM room WHERE room.beds >= uBeds AND room.room_id NOT IN (
-   SELECT room_id 
-   FROM booking 
-   INNER JOIN roombooking 
-   ON booking.booking_id = roombooking.booking_id 
-   WHERE hotel_id = uHotel_Id 
-   AND uDate_In < date_out 
-   AND date_in < uDate_Out);
-
 /* For a given hotel_id get a table of the beds, their type and the room_id */
 /* Add an allocation thingy - for the rooms that are suitable we check the booking situation  */
 
@@ -84,3 +72,12 @@ INNER JOIN roomtype ON roomtype.roomtype_id = room.roomtype_id
 WHERE room.hotel_id = 2;
 
 /* Now we know what rooms are of interest  */
+/* we can look at the booking table with these room ids and see what is available, then present that to the user */
+
+SELECT room_id 
+FROM booking 
+INNER JOIN roombooking 
+ON booking.booking_id = roombooking.booking_id 
+WHERE hotel_id = uHotel_Id 
+AND uDate_In < date_out 
+AND date_in < uDate_Out);
