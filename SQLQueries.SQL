@@ -102,6 +102,9 @@ CALL RoomsAvailable(1, '2020-01-01', '2020-01-03', @rooms_available);
 SELECT @rooms_available as 'rooms available';
 
 /* now its time to create a room booking - this is performed within a transaction */
+/* Checking to make sure that each room is available for booking before we add to the booking table */
+
+
 
 /* calling the stored procedure */
 
