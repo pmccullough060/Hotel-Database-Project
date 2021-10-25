@@ -48,18 +48,19 @@ START TRANSACTION;
    set @room_id = 5;
 
    DELETE FROM roomimage WHERE room_id = @room_id;
-
    DELETE FROM cancellationpolicy WHERE room_id = @room_id;
-
    DELETE FROM breakfast WHERE room_id = @room_id;
-
    DELETE FROM roomamenity WHERE room_id = @room_id;
-
    DELETE FROM roombed WHERE room_id = @room_id;
-
    DELETE FROM room WHERE room_id = @room_id;
 
 COMMIT;
+
+/* find hotels in a given city or country /*
+
+/* Get the average rating for a given hotel /*
+
+
 
 /* For a given hotel_id get a table of the beds, their type and the room_id */
 /* Add an allocation thingy - for the rooms that are suitable we check the booking situation  */
@@ -71,13 +72,37 @@ INNER JOIN room ON roombed.room_id = room.room_id
 INNER JOIN roomtype ON roomtype.roomtype_id = room.roomtype_id
 WHERE room.hotel_id = 2;
 
-/* Now we know what rooms are of interest  */
-/* we can look at the booking table with these room ids and see what is available, then present that to the user */
+/* Once we can identify which rooms are potentially suitable we can find out how many are booked for those dates */
+/* remember we know the room allocation and the date of the booking that lets us work out what rooms are available */
+/* this will be a stored procedure that will be called during the booking transaction */
 
-SELECT room_id 
-FROM booking 
-INNER JOIN roombooking 
-ON booking.booking_id = roombooking.booking_id 
-WHERE hotel_id = uHotel_Id 
-AND uDate_In < date_out 
-AND date_in < uDate_Out);
+SET @room_id = 1;
+SET @date_in = '2020-01-01';
+SET @date_out = '2020-01-03';
+
+SET @rooms_booked = (SELECT COUNT(*)
+   						FROM booking 
+   						INNER JOIN roombooking 
+   						ON booking.booking_id = roombooking.booking_id 
+   						WHERE room_id = @room_id 
+   						AND @date_in < date_out 
+   						AND date_in < @date_out);
+    
+SET @room_allocation = (SELECT room.allocation 
+                        FROM room 
+                        WHERE room.room_id = @room_id);
+    
+SET @rooms_available = @room_allocation - @rooms_booked;
+    
+SELECT @rooms_available AS 'Rooms available';
+
+/* Getting the availability for a given set of dates and a room_id using the stored procedure in phpmyadmin*/
+SET @rooms_available = 0;
+CALL RoomsAvailable(1, '2020-01-01', '2020-01-03', @rooms_available);
+SELECT @rooms_available as 'rooms available';
+
+/* now its time to create a room booking - this is performed within a transaction */
+
+/* calling the stored procedure */
+
+
