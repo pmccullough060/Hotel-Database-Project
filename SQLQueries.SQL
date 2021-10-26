@@ -59,6 +59,9 @@ COMMIT;
 
 /* find hotels in a given city or country /*
 
+
+
+
 /* Get the average rating for a given hotel /*
 
 
@@ -76,6 +79,7 @@ WHERE room.hotel_id = 2;
 /* Once we can identify which rooms are potentially suitable we can find out how many are booked for those dates */
 /* remember we know the room allocation and the date of the booking that lets us work out what rooms are available */
 /* this will be a stored procedure that will be called during the booking transaction */
+/* the day in is the night you stay. */
 
 SET @room_id = 1;
 SET @date_in = '2020-01-01';
@@ -86,7 +90,7 @@ SET @rooms_booked = (SELECT COUNT(*)
    						INNER JOIN roombooking 
    						ON booking.booking_id = roombooking.booking_id 
    						WHERE room_id = @room_id 
-   						AND @date_in < date_out 
+   						AND @date_in <= date_out 
    						AND date_in < @date_out);
     
 SET @room_allocation = (SELECT room.allocation 
@@ -114,6 +118,20 @@ WHERE room.room_id = 10;
 
 
 
+/* Get the room price for the booking */
+
+SET @room_id = 10;
+SET @date_in = '2021-11-10';
+SET @date_out = '2021-11-13';
+
+SET @price = (SELECT SUM(price.price) 
+			     FROM price 
+			     WHERE price.room_id = @room_id
+		        AND @date_in <= price.date
+			     AND price.date < @date_out);
+         
+SELECT @price AS "total cost of booking";
+
 /* now its time to create a room booking - this is performed within a transaction */
 /* Checking to make sure that each room is available for booking before we add to the booking table */
 
@@ -127,7 +145,7 @@ SET @rooms_booked = (SELECT COUNT(*)
    						INNER JOIN roombooking 
    						ON booking.booking_id = roombooking.booking_id 
    						WHERE room_id = @room_id 
-   						AND @date_in < date_out 
+   						AND @date_in <= date_out 
    						AND date_in < @date_out);
     
 SET @room_allocation = (SELECT room.allocation 
