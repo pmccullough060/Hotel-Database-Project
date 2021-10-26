@@ -3,6 +3,7 @@ START TRANSACTION;
 
    SET @hotel_id = 2;
    SET @roomtype_id = 2;
+   SET @room_allocation = 5;
    SET @singlebed = 1;
    SET @doublebed = 2;
    SET @wifi = 1;
@@ -11,8 +12,8 @@ START TRANSACTION;
    SET @image_guid_2 = '15044db7c324459ca4e6ce0c9132842f';
 
    /* adding a room record to the room table */
-   INSERT INTO room (hotel_id, roomtype_id) 
-   VALUES (@hotel_id, @roomtype_id);
+   INSERT INTO room (hotel_id, roomtype_id, allocation) 
+   VALUES (@hotel_id, @roomtype_id, @room_allocation);
 
    SET @last_id_in_room = LAST_INSERT_ID();
 
@@ -65,7 +66,7 @@ COMMIT;
 /* For a given hotel_id get a table of the beds, their type and the room_id */
 /* Add an allocation thingy - for the rooms that are suitable we check the booking situation  */
 
-SELECT room.room_id AS 'Room ID', bed.type, bed.no_person, roomtype.type
+SELECT room.room_id AS 'Room ID', bed.type, bed.no_person, roomtype.type, room.allocationS
 FROM roombed
 INNER JOIN bed ON roombed.bed_id = bed.bed_id
 INNER JOIN room ON roombed.room_id = room.room_id
@@ -101,10 +102,67 @@ SET @rooms_available = 0;
 CALL RoomsAvailable(1, '2020-01-01', '2020-01-03', @rooms_available);
 SELECT @rooms_available as 'rooms available';
 
+/* Get the breakfast options */
+
+SELECT breakfast.room_id, breakfast.price_per_guest, breakfast.about, breakfast.available
+FROM room
+INNER JOIN breakfast ON room.room_id = breakfast.room_id
+WHERE room.room_id = 10;
+
+/* Get the cancellation options */
+
+
+
+
 /* now its time to create a room booking - this is performed within a transaction */
 /* Checking to make sure that each room is available for booking before we add to the booking table */
 
+SET @room_id = 1;
+SET @date_in = '2020-01-01';
+SET @date_out = '2020-01-03';
+SET @rooms_required = 2;
 
+SET @rooms_booked = (SELECT COUNT(*)
+   						FROM booking 
+   						INNER JOIN roombooking 
+   						ON booking.booking_id = roombooking.booking_id 
+   						WHERE room_id = @room_id 
+   						AND @date_in < date_out 
+   						AND date_in < @date_out);
+    
+SET @room_allocation = (SELECT room.allocation 
+                        FROM room 
+                        WHERE room.room_id = @room_id);
+    
+SET @rooms_available = @room_allocation - @rooms_booked;
+    
+IF(@rooms_available <= @rooms_required) 
+	THEN
+	SELECT 'ERROR: Rooms not available';
+ELSE
+	SELECT 'Rooms available for booking';
+END IF;
+
+SET @room_id = 1;
+SET @date_in = '2020-01-01';
+SET @date_out = '2020-01-03';
+SET @rooms_required = 1;
+
+SET @rooms_booked = (SELECT COUNT(*)
+   						FROM booking 
+   						INNER JOIN roombooking 
+   						ON booking.booking_id = roombooking.booking_id 
+   						WHERE room_id = @room_id 
+   						AND @date_in < date_out 
+   						AND date_in < @date_out);
+    
+SET @room_allocation = (SELECT room.allocation 
+                        FROM room 
+                        WHERE room.room_id = @room_id);
+    
+SET @rooms_available = @room_allocation - @rooms_booked;
+    
+SELECT IF(@rooms_available < @rooms_required, 'ERROR: Rooms not available', 'Rooms available for booking');
 
 /* calling the stored procedure */
 
