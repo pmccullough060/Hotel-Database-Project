@@ -57,6 +57,38 @@ START TRANSACTION;
 
 COMMIT;
 
+/* Adding a new Hotel */
+
+/* Add a hotel room */
+START TRANSACTION;
+
+   SET @hotel_name = 'The Tower Hotel';
+   SET @city_id = 2;
+   SET @wifi = 3;
+   SET @parking = 2;
+   SET @address = 'St Katherines Way, Tower Hamlets, London';
+   SET @postcode = 'E1W 1LD';
+   SET @image_guid_1 = '78f0942c909f4c158c9ca4bda2878aa5';
+   SET @image_guid_2 = '59e5e36b8c114be3b2c0ca402e7b8654';
+
+   /* adding a room record to the room table */
+   INSERT INTO hotel (hotel_name, city_id, address, postcode) 
+   VALUES (@hotel_name, @city_id, @address, @postcode);
+
+   SET @last_id_in_hotel = LAST_INSERT_ID();
+
+   /* add two room ammenities */
+   INSERT INTO hotelamenityhotel (hotel_id, amenityhotel_id)
+   VALUES (@last_id_in_hotel, @wifi),
+          (@last_id_in_hotel, @parking);
+
+   /* add guids for two images of the room so they can be retrieved from the CDN*/
+   INSERT INTO hotelimage (hotel_id, guid)
+   VALUES (@last_id_in_hotel, @image_guid_1),
+          (@last_id_in_hotel, @image_guid_2);
+
+COMMIT;
+
 /* find hotels in a given city or country /*
 
 
@@ -64,10 +96,24 @@ COMMIT;
 
 /* Get the average rating for a given hotel /*
 
+/* Get the amenties for a hotel */
 
+SELECT hotel.hotel_id, hotel_name, amenityhotel.type 
+FROM hotel 
+INNER JOIN hotelamenityhotel ON hotel.hotel_id = hotelamenityhotel.hotel_id
+INNER JOIN amenityhotel ON hotelamenityhotel.amenityhotel_id = amenityhotel.amenityhotel_id
+WHERE hotel.hotel_id = 3;
+
+/*find hotel based on an area and ammenities */
+
+SELECT hotel.hotel_id, hotel_name, amenityhotel.type 
+FROM hotel 
+INNER JOIN hotelamenityhotel ON hotel.hotel_id = hotelamenityhotel.hotel_id
+INNER JOIN amenityhotel ON hotelamenityhotel.amenityhotel_id = amenityhotel.amenityhotel_id
+WHERE hotel.city_id = 2
+AND amenityhotel.amenityhotel_id = 2;
 
 /* For a given hotel_id get a table of the beds, their type and the room_id */
-/* Add an allocation thingy - for the rooms that are suitable we check the booking situation  */
 
 SELECT room.room_id AS 'Room ID', bed.type, bed.no_person, roomtype.type, room.allocationS
 FROM roombed
@@ -115,10 +161,8 @@ WHERE room.room_id = 10;
 
 /* Get the cancellation options */
 
-
-
-
 /* Get the room price for the booking */
+/* remember pricing is inclusive of the checkin date and exclusive of the checkout date */
 
 SET @room_id = 10;
 SET @date_in = '2021-11-10';
@@ -171,7 +215,7 @@ SET @rooms_booked = (SELECT COUNT(*)
    						INNER JOIN roombooking 
    						ON booking.booking_id = roombooking.booking_id 
    						WHERE room_id = @room_id 
-   						AND @date_in < date_out 
+   						AND @date_in <= date_out 
    						AND date_in < @date_out);
     
 SET @room_allocation = (SELECT room.allocation 
