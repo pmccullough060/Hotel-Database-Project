@@ -1,15 +1,15 @@
 /* Add a hotel room */
 START TRANSACTION;
 
-   SET @hotel_id = 2;
+   SET @hotel_id = 7;
    SET @roomtype_id = 2;
    SET @room_allocation = 5;
    SET @singlebed = 1;
    SET @doublebed = 2;
    SET @wifi = 1;
    SET @parking = 2;
-   SET @image_guid_1 = 'eda1c6f23b154b2b9e82764c8ad0ce49';
-   SET @image_guid_2 = '15044db7c324459ca4e6ce0c9132842f';
+   SET @image_guid_1 = '2fbc09d8053a49f9a5d49c59cdc263bd';
+   SET @image_guid_2 = 'c48f0690ba414571a3c81d11d9ba81f3';
 
    /* adding a room record to the room table */
    INSERT INTO room (hotel_id, roomtype_id, allocation) 
@@ -19,7 +19,7 @@ START TRANSACTION;
 
    /* add two beds to the room */
    INSERT INTO roombed (room_id, bed_id)
-   VALUES (@last_id_in_room, @singlebed),
+   VALUES (@last_id_in_room, @doublebed),
           (@last_id_in_room, @doublebed);
 
    /* add two room ammenities */
@@ -29,7 +29,7 @@ START TRANSACTION;
 
    /* Add two breakfast options*/
    INSERT INTO breakfast (available, about, price_per_guest, room_id)
-   VALUES (true, 'full english', 20.00, @last_id_in_room );
+   VALUES (true, 'breakfast', 00.00, @last_id_in_room );
 
    /* add two cancellation options */
    INSERT INTO cancellationpolicy (permitted, price, timebeforecheckin, room_id)
@@ -59,17 +59,17 @@ COMMIT;
 
 /* Adding a new Hotel */
 
-/* Add a hotel room */
+/* Add a hotel */
 START TRANSACTION;
 
-   SET @hotel_name = 'The Tower Hotel';
-   SET @city_id = 2;
+   SET @hotel_name = 'The Maldron Hotel';
+   SET @city_id = 4;
    SET @wifi = 3;
    SET @parking = 2;
-   SET @address = 'St Katherines Way, Tower Hamlets, London';
-   SET @postcode = 'E1W 1LD';
-   SET @image_guid_1 = '78f0942c909f4c158c9ca4bda2878aa5';
-   SET @image_guid_2 = '59e5e36b8c114be3b2c0ca402e7b8654';
+   SET @address = 'Parnell Square West, Rotunda, Dublin';
+   SET @postcode = 'D01 HX02';
+   SET @image_guid_1 = 'f648d3031ba64f74b209029a62720510';
+   SET @image_guid_2 = '23e53d7f9f3b4707ac606c27fb8686a4';
 
    /* adding a room record to the room table */
    INSERT INTO hotel (hotel_name, city_id, address, postcode) 
@@ -80,7 +80,8 @@ START TRANSACTION;
    /* add two room ammenities */
    INSERT INTO hotelamenityhotel (hotel_id, amenityhotel_id)
    VALUES (@last_id_in_hotel, @wifi),
-          (@last_id_in_hotel, @parking);
+          (@last_id_in_hotel, @parking)
+          (@last_id_in_hotel, 1);
 
    /* add guids for two images of the room so they can be retrieved from the CDN*/
    INSERT INTO hotelimage (hotel_id, guid)
@@ -148,6 +149,7 @@ SET @rooms_available = @room_allocation - @rooms_booked;
 SELECT @rooms_available AS 'Rooms available';
 
 /* Getting the availability for a given set of dates and a room_id using the stored procedure in phpmyadmin*/
+
 SET @rooms_available = 0;
 CALL RoomsAvailable(1, '2020-01-01', '2020-01-03', @rooms_available);
 SELECT @rooms_available as 'rooms available';
