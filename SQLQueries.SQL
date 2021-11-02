@@ -3,7 +3,7 @@ START TRANSACTION;
 
    SET @hotel_id = 7;
    SET @roomtype_id = 2;
-   SET @room_allocation = 5;
+   SET @room_allocation = 10;
    SET @singlebed = 1;
    SET @doublebed = 2;
    SET @wifi = 1;
@@ -19,8 +19,7 @@ START TRANSACTION;
 
    /* add two beds to the room */
    INSERT INTO roombed (room_id, bed_id)
-   VALUES (@last_id_in_room, @doublebed),
-          (@last_id_in_room, @doublebed);
+   VALUES (@last_id_in_room, @singlebed);
 
    /* add two room ammenities */
    INSERT INTO roomamenity (room_id, amenity_id)
@@ -90,12 +89,28 @@ START TRANSACTION;
 
 COMMIT;
 
-/* find hotels in a given city or country /*
+/* Adding a review */
 
+/* login a user */
 
+SET @username = 'billybob';
+SET @email = 'billybobgmail.com';
 
+SELECT user.user_password AS 'Password hash'
+FROM user
+WHERE user.user_email LIKE 'billybob@gmail.com';
+
+/* find hotels in a given city or country */
+
+SELECT hotel.hotel_id, hotel_name, amenityhotel.type 
+FROM hotel 
+INNER JOIN hotelamenityhotel ON hotel.hotel_id = hotelamenityhotel.hotel_id
+INNER JOIN amenityhotel ON hotelamenityhotel.amenityhotel_id = amenityhotel.amenityhotel_id
+WHERE hotel.city_id = 2;
 
 /* Get the average rating for a given hotel /*
+
+
 
 /* Get the amenties for a hotel */
 
