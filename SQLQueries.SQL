@@ -91,6 +91,9 @@ COMMIT;
 
 /* Adding a review */
 
+INSERT INTO review (review.hotel_id, review.user_id, review.rating, review.timestamp, review.title, review.content, review.verified)
+VALUES (1, 1, 4, '2020-10-10 12:12:01', 'Great Stay!', 'Had a fantastic stay, great facilities would go again', 1);
+
 /* login a user */
 
 SET @username = 'billybob';
@@ -108,9 +111,30 @@ INNER JOIN hotelamenityhotel ON hotel.hotel_id = hotelamenityhotel.hotel_id
 INNER JOIN amenityhotel ON hotelamenityhotel.amenityhotel_id = amenityhotel.amenityhotel_id
 WHERE hotel.city_id = 2;
 
-/* Get the average rating for a given hotel /*
 
+/* find hotel ids for a given city */
+/* first we get a list of hotels, and the basic information required for sorting */
+/* in turn we then check availability, we do this first for the most likely hotel room to be choosen */
 
+SET @city_id = 2;
+
+SELECT hotel.hotel_id AS 'Hotel Id', 
+	    hotel.featured AS 'Is Featured', 
+       hotel.user_rating AS 'User Rating',
+       hotelrating.rating AS 'Hotel Star Rating'
+FROM hotel 
+INNER JOIN hotelrating ON hotel.star_rating = hotelrating.hotelrating_id
+WHERE hotel.city_id = @city_id;
+
+/* Get the average rating for a given hotel */
+
+SET @hotel_id = 1;
+
+SET @rating = (SELECT AVG(review.rating)
+			   FROM review
+			   WHERE review.hotel_id = @hotel_id);
+               
+SELECT @rating AS 'Hotel Rating';
 
 /* Get the amenties for a hotel */
 
@@ -131,7 +155,7 @@ AND amenityhotel.amenityhotel_id = 2;
 
 /* For a given hotel_id get a table of the beds, their type and the room_id */
 
-SELECT room.room_id AS 'Room ID', bed.type, bed.no_person, roomtype.type, room.allocationS
+SELECT room.room_id, bed.type, bed.no_person, roomtype.type, room.allocationS
 FROM roombed
 INNER JOIN bed ON roombed.bed_id = bed.bed_id
 INNER JOIN room ON roombed.room_id = room.room_id
